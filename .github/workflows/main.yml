@@ -1,8 +1,26 @@
 name: PR build
+run-name: "PR build ${{ inputs.leg || github.event_name }} ${{ inputs.racecar_run }}"
 
-on: pull_request
+on:
+  pull_request:
 
+  workflow_dispatch:
+    inputs:
+      leg:
+        description: "baseline (uninstrumented) or instrumented (under chalk/curiosity)"
+        type: choice
+        options: [instrumented, baseline]
+        default: baseline
+      profile:
+        description: "CrashOverride chalk profile"
+        type: string
+        default: curiosity-tests-racecar
+      racecar_run:
+        description: "racecar correlation token, echoed into the run name"
+        type: string
+        default: ""
 env:
+  CHALK_ON: ${{ inputs.leg == 'instrumented' }}
   GIT_CONFIG_PARAMETERS: "'checkout.workers=56'"
 
 jobs:
@@ -81,8 +99,6 @@ jobs:
         architecture:
           - name: x86_64
             runner: windows-latest
-          - name: aarch64
-            runner: windows-11-arm
     runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v7
@@ -130,11 +146,6 @@ jobs:
             git-sdk: git-sdk-64
             mingw-prefix: mingw64
             msystem: MINGW64
-          - name: aarch64
-            runner: windows-11-arm
-            git-sdk: git-sdk-arm64
-            mingw-prefix: clangarm64
-            msystem: CLANGARM64
         exclude:
           - directory: nuget
             architecture:
@@ -240,16 +251,6 @@ jobs:
             msystem: MINGW32
             sdk-repo: git-sdk-32
             runner: windows-latest
-          - name: x86_64
-            mingw-prefix: mingw64
-            msystem: MINGW64
-            sdk-repo: git-sdk-64
-            runner: windows-latest
-          - name: aarch64
-            mingw-prefix: clangarm64
-            msystem: CLANGARM64
-            sdk-repo: git-sdk-arm64
-            runner: windows-11-arm
         exclude:
           - artifact: minimal
             arch:
@@ -360,22 +361,6 @@ jobs:
             msystem: MINGW32
             sdk-repo: git-sdk-32
             runner: windows-latest
-          - name: x86_64
-            mingw-prefix: mingw64
-            msystem: MINGW64
-            sdk-repo: git-sdk-64
-            runner: windows-latest
-          - name: ucrt64
-            mingw-prefix: ucrt64
-            msystem: UCRT64
-            sdk-repo: git-sdk-64
-            sdk-branch: ucrt64
-            runner: windows-latest
-          - name: aarch64
-            mingw-prefix: clangarm64
-            msystem: CLANGARM64
-            sdk-repo: git-sdk-arm64
-            runner: windows-11-arm
     runs-on: ${{ matrix.arch.runner }}
     steps:
       - uses: actions/checkout@v7
