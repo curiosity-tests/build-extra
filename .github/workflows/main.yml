@@ -19,6 +19,9 @@ on:
         description: "racecar correlation token, echoed into the run name"
         type: string
         default: ""
+permissions:
+  contents: read
+  id-token: write
 env:
   CHALK_ON: ${{ inputs.leg == 'instrumented' }}
   GIT_CONFIG_PARAMETERS: "'checkout.workers=56'"
@@ -27,9 +30,16 @@ jobs:
   determine-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           fetch-depth: 0
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::error::CURIOSITY_ROOT unset - observables never installed"; exit 1; }
       - name: determine packages to build
         id: set-matrix
         shell: bash
@@ -101,7 +111,15 @@ jobs:
             runner: windows-latest
     runs-on: ${{ matrix.architecture.runner }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: crashappsec/action-checkout@main
+        with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::error::CURIOSITY_ROOT unset - observables never installed"; exit 1; }
       - uses: git-for-windows/setup-git-for-windows-sdk@v2
         with:
           flavor: full
@@ -152,7 +170,15 @@ jobs:
               name: aarch64
     runs-on: ${{ matrix.architecture.runner }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: crashappsec/action-checkout@main
+        with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::error::CURIOSITY_ROOT unset - observables never installed"; exit 1; }
       - name: initialize bare SDK clone
         shell: bash
         run: |
@@ -266,7 +292,15 @@ jobs:
               sdk-repo: git-sdk-32
     runs-on: ${{ matrix.arch.runner }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: crashappsec/action-checkout@main
+        with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::error::CURIOSITY_ROOT unset - observables never installed"; exit 1; }
       - name: initialize bare SDK clone
         shell: bash
         run: |
@@ -363,7 +397,15 @@ jobs:
             runner: windows-latest
     runs-on: ${{ matrix.arch.runner }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: crashappsec/action-checkout@main
+        with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::error::CURIOSITY_ROOT unset - observables never installed"; exit 1; }
       - name: initialize bare SDK clone
         shell: bash
         run: |
